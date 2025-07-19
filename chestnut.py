@@ -12,8 +12,8 @@ LLM_MODEL = "llama3.1:8b"
 SUPPORTED_EXTS = {'.txt', '.md', '.markdown', '.rst', '.log', '.text'}
 DB_CONN_INFO = {
     'dbname': os.getenv("CHESTNUTAI_DB", "chestnutai"),
-    'user': os.getenv("CHESTNUTAI_USER", "postgres"),
-    'password': os.getenv("CHESTNUTAI_PASS", "password"),
+    'user': os.getenv("CHESTNUTAI_USER", "blenington"),
+    'password': os.getenv("CHESTNUTAI_PASS", ""),
     'host': os.getenv("CHESTNUTAI_HOST", "localhost"),
     'port': os.getenv("CHESTNUTAI_PORT", 5432)
 }
@@ -125,6 +125,10 @@ def summarize_notes(batch_size=5):
     for i, (note_id, fname, content) in enumerate(notes):
         print(f"Summarizing [{i+1}/{len(notes)}]: {fname}")
         summary = summarize_text(content)
+        # Check for error response and only store if summary is valid
+        if summary.startswith("Error querying LLM"):
+            print(f"  Failed to summarize: {summary}")
+            continue  # Do NOT update summary in DB
         update_summary(note_id, summary)
         print(f"  Summary: {summary[:80]}...")
 
